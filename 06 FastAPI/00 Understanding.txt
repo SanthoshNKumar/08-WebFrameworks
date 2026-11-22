@@ -1,1 +1,90 @@
 
+Common core jobs 
+ - Receive the request
+ - Parse the request
+ - Route the request
+ - Build and send the response
+ - Handle errors
+
+
+Uvicorn and Gunicorn?
+  - web servers for Python apps
+  - Web servers
+
+Browser → Uvicorn / Gunicorn (server) → FastAPI / Flask (framework) → your function
+
+A web framework (FastAPI, Flask, Django) is where you write your app's logic: which URLs exist and what each one should do.
+A web server (Uvicorn, Gunicorn, Nginx) runs your app and handles the network side: listening for requests and passing them to your framework code.
+
+Webserver
+ - A web server is a program that waits for requests from browsers (or other apps) over the internet and sends back responses, like web pages, images, or data.
+
+Is FastAPI/Flask 
+
+Restaurant analogy
+
+- The web server is the waiter. It greets customers at the door, takes their orders, carries them to the kitchen, and brings the food back to the table. It doesn't cook anything.
+- The web framework is the kitchen with its recipes and setup. It decides what each order means and how the dish is prepared.
+- Your code is the chef's specific dishes, the part unique to your restaurant.
+
+Your application is the code you write: the functions that do the actual work, like fetching a user, saving an order, or updating a profile. FastAPI is the framework that connects URLs to those functions. When a request like PATCH /users/5 arrives, FastAPI figures out which of your functions should handle it and calls it. Uvicorn runs the whole thing and handles the network side.
+
+Browser only ever talks to Uvicorn. The browser never talks to FastAPI directly.
+
+The browser sends an HTTP request over the network to Uvicorn (for example, at http://localhost:8000). Uvicorn receives it and hands it to FastAPI inside the same program, as a regular Python function call, not over the network. FastAPI runs your function and gives the result back to Uvicorn. Uvicorn then sends the HTTP response back to the browser.
+
+Browser ⇄ Uvicorn → FastAPI → your function
+          (network)  (inside Python)
+
+In production, it's often one step further removed. If you put Nginx in front, the browser only talks to Nginx, and Nginx forwards requests to Uvicorn:
+
+Browser ⇄ Nginx ⇄ Uvicorn → FastAPI → your function
+
+Core basics
+-   **Routes / path operations:** decorators like `@app.get`, `@app.post`, `@app.put`, `@app.patch`, and `@app.delete` connect URLs to functions.
+-   **Path parameters:** values inside the URL, like `/users/{user_id}`.
+-   **Query parameters:** values after `?` in the URL, like `/items?page=2&limit=10`. Any function argument that isn't in the path becomes a query parameter automatically.
+-   **Request body:** JSON data sent by the client, defined using **Pydantic models** (classes that describe the shape of your data).
+-   **Automatic validation:** FastAPI checks incoming data against your type hints and returns clear errors if it doesn't match.
+-   **Automatic docs:** interactive documentation at `/docs` (Swagger UI) and `/redoc`, generated from your code.
+
+
+Shaping requests and responses
+-   **Response models:** `response_model=` controls exactly which fields are sent back (useful for hiding things like passwords).
+-   **Status codes:** set them with `status_code=201`, etc.
+-   **HTTPException:** raise errors like `HTTPException(status_code=404, detail="Not found")`.
+-   **Headers and cookies:** read them with `Header()` and `Cookie()`.
+-   **Forms and file uploads:** `Form()`, `File()`, and `UploadFile` (requires installing `python-multipart`).
+-   **Custom responses:** `JSONResponse`, `HTMLRespo  nse`, `RedirectResponse`, `FileResponse`, `StreamingResponse`
+
+
+Organizing your app
+
+-   **APIRouter:** split routes into separate files (this is where your `@router.patch` came from), then attach them with `app.include_router()`.
+-   **Tags, summaries, and descriptions:** label and group endpoints in the docs.
+-   **Dependencies (`Depends`):** one of FastAPI's most powerful features. Reusable pieces of logic, like getting a database connection or the current logged-in user, that FastAPI runs automatically before your function.
+
+from fastapi import APIRouter, File, HTTPException, UploadFile,Query
+from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
+
+- @router.get
+- @router.post
+- @router.delete
+- @ 
+- @
+- @
+
+
+@router.get("/items/{item_id}", response_model=HitlItem)
+@router.get("/summary", response_model=HitlSummary)
+@router.get("/violation-rates", response_model=ViolationRatesByPriority)
+@router.post("/approve_remaining")
+@router.post("/items/bulk_decision", response_model=BulkDecisionResult)
+@router.post("/items/{item_id}/decision_v2", response_model=HitlItem)
+@router.post("/approve_remaining")
+
+
+
+
+
